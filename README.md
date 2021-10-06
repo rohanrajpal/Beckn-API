@@ -29,7 +29,16 @@ Postman collection have been provided with sample json for each API services.
 ```bash
       a) server:
           port: 8080
-      b) beckn:
+      b) ehcache:
+            cacheregion:
+              beckn-api:
+                common-cache:
+                  timetolive: 86400
+                  entrycount: 1000
+                lookup-cache:
+                  timetolive: 1800
+                  entrycount: 1000
+      c) beckn:
           persistence:
                  type: http|db-postgres
                  audit-schema-error: true
@@ -38,8 +47,9 @@ Postman collection have been provided with sample json for each API services.
 ```
 Description :
 1. port: it is server port number on which this jar will run
-2. beckn.persistence.type: the pipe separated value for persistence strategy. Currently allowed values are http & db-postgres. Value http means response will be pushed to the        url mentioned in the  http_entity_endpoint parameter. If db-postgres used then response will be saved in database. Any other value is not allowed.
-3. beckn.entity.type: the allowed values are bap or bpp. Depending on the value provided, jar will all auto configuration internally and start working accordingly . Any other        value is not allowed.
+2. ehcache: The ehcache have been added which will cache the lookup api data fetched from the registry for the defined hours.
+3. beckn.persistence.type: the pipe separated value for persistence strategy. Currently allowed values are http & db-postgres. Value http means response will be pushed to the        url mentioned in the  http_entity_endpoint parameter. If db-postgres used then response will be saved in database. Any other value is not allowed.
+4. beckn.entity.type: the allowed values are bap or bpp. Depending on the value provided, jar will all auto configuration internally and start working accordingly . Any other        value is not allowed.
     
     2. adaptor-config-bap.json
 ```bash
@@ -90,17 +100,27 @@ b. BPP - seller node Configuration ("seller node" compliant with Beckn BPP speci
 ```bash
       a) server:
           port: 8080
-      b) beckn:
+      b) ehcache:
+            cacheregion:
+              beckn-api:
+                common-cache:
+                  timetolive: 86400
+                  entrycount: 1000
+                lookup-cache:
+                  timetolive: 1800
+                  entrycount: 1000
+      c) beckn:
           persistence:
                  type: http|db-postgres
                  audit-schema-error: true
           entity:
-                     type: seller
+                 type: seller
 ```  
 Description :
 1. port: it is server port number on which this jar will run
-2. beckn.persistence.type: the pipe separated value for persistence strategy. Currently allowed values are http & db-postgres. Value http means response will be pushed to the        url mentioned in the  http_entity_endpoint parameter. If db-postgres used then response will be saved in database. Any other value is not allowed.
-3. beckn.entity.type: the allowed values are bap or bpp. Depending on the value provided, jar will all auto configuration internally and start working accordingly . Any other        value is not allowed.
+2. ehcache: The ehcache have been added which will cache the lookup api data fetched from the registry for the defined hours.
+3. beckn.persistence.type: the pipe separated value for persistence strategy. Currently allowed values are http & db-postgres. Value http means response will be pushed to the        url mentioned in the  http_entity_endpoint parameter. If db-postgres used then response will be saved in database. Any other value is not allowed.
+4. beckn.entity.type: the allowed values are bap or bpp. Depending on the value provided, jar will all auto configuration internally and start working accordingly . Any other        value is not allowed.
     
     2. adaptor-config-bpp.json
 ```bash
