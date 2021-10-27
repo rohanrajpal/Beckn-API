@@ -18,7 +18,9 @@ ONDC aims at promoting open networks developed on open-sourced methodology, usin
 # 3. Deployment
 Two options are available:
 1. Default - Run it as a microservice. (It can be also docker enabled) 
-2. Integration with Java application. (Connect to NSDL eGov for more details)
+2. Integration with Java application. <br />
+  a. Put the jar file in maven dependency directory<br />
+  b. Add package scan in pom.xml<br />
 # 4. Postgres DB script
 Postgres DB scripts have been provided who wish to capture API transaction details in their database for audit.
 # 5. Sample Postman Collection
