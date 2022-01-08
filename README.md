@@ -27,6 +27,9 @@ Postgres DB scripts have been provided who wish to capture API transaction detai
 Postman collection have been provided with sample json for each API services.
 # 6. Configuration Details
   a. BAP - buyer node Configuration ("buyer node" compliant with Beckn BAP specifications)
+      <br /> <b>1. If you are using beckn-multi-api-0.0.1.jar file then postgres properties can be passed. 
+      <br />2. If you are using beckn-multi-api-no-jpa-0.0.1.jar then you dont need to pass "db-postgres" property. 
+      <br /> 3. If you want to logs transaction in log file then "file" property needs to passed in configuration. </b>
 1. Application.yml 
 ```bash
       a) server:
@@ -42,10 +45,13 @@ Postman collection have been provided with sample json for each API services.
                   entrycount: 1000
       c) beckn:
           persistence:
-                 type: http|db-postgres
-                 audit-schema-error: true
+            type: http|db-postgres|file
+            audit-schema-error: true
+            file-path: ./
           entity:
-                     type: buyer
+            type: buyer
+            
+            
 ```
 Description :
 1. port: it is server port number on which this jar will run
@@ -98,6 +104,9 @@ Description: (As given in above example, add call back url configuration in arra
 8. header_authentication: auth header validation check. Allowed values true or false. If false auth header validation will be skipped.
 
 b. BPP - seller node Configuration ("seller node" compliant with Beckn BPP specifications)
+      <br /> <b>1. If you are using beckn-multi-api-0.0.1.jar file then postgres properties can be passed. 
+      <br />2. If you are using beckn-multi-api-no-jpa-0.0.1.jar then you dont need to pass "db-postgres" property. 
+      <br /> 3. If you want to logs transaction in log file then "file" property needs to passed in configuration. </b>
 1. Application.yml 
 ```bash
       a) server:
@@ -113,7 +122,7 @@ b. BPP - seller node Configuration ("seller node" compliant with Beckn BPP speci
                   entrycount: 1000
       c) beckn:
           persistence:
-                 type: http|db-postgres
+                 type: http|db-postgres|file
                  audit-schema-error: true
           entity:
                  type: seller
