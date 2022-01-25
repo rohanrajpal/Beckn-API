@@ -11,14 +11,22 @@ This page will contains the details of ONDC APIs Adaptors developed by NSDL eGov
 7. [NSDL BG Configuration Details](#paragraph1)
 8. [NSDL Sandbox](#paragraph1)
 
+# Version History
+
+| Sr.No.  	|Description   	|Date   	|Version   	|
+|---	|---	|---	|---	|
+|  1. 	|Initial Version of Adaptor   	|   	|1.0   	|
+|  2. 	|Change in adaptor with JPA and no JPA   	|   	|1.1   	|
+|  3. 	|Change in adaptor to handle multi-tenancy   	|  25-Jan-2022 	|1.2   	|
+
 # 1. Introduction
 ONDC aims at promoting open networks developed on open-sourced methodology, using open specifications and open network protocols independent of any specific platform. NSDL eGov is helping building the ONDC API adaptors which is powered by Beckn Protocols for the netowrk participants who can easily run and integrate with their applications.
 # 2. ONDC API Adaptor Flow
 ![alt text](https://github.com/dhiraj-nsdl/Beckn-API/blob/main/image/Adaptor%20Architecture%20flow%20updated.png)
 # 3. Deployment
-Two options are available:
-1. Default - Run it as a microservice. (It can be also docker enabled) 
-2. Integration with Java application. <br />
+Two options are available: 
+1. Default - Run it as a microservice. (It can be also docker enabled). <b>Use OpenJDK11 and above</b>
+2.  Integration with Java application. <br />
   a. Put the jar file in maven dependency directory<br />
   b. Add package scan in pom.xml<br />
 # 4. Postgres DB script
@@ -27,8 +35,8 @@ Postgres DB scripts have been provided who wish to capture API transaction detai
 Postman collection have been provided with sample json for each API services.
 # 6. Configuration Details
   a. BAP - buyer node Configuration ("buyer node" compliant with Beckn BAP specifications)
-      <br /> <b>1. If you are using beckn-multi-api-0.0.1.jar file then postgres properties can be passed. 
-      <br />2. If you are using beckn-multi-api-no-jpa-0.0.1.jar then you dont need to pass "db-postgres" property. 
+      <br /> <b>1. If you are using beckn-multi-api-jpa-0.0.1.jar file then postgres properties can be passed. 
+      <br />2. If you are using beckn-multi-api-0.0.1.jar then you dont need to pass "db-postgres" property. 
       <br /> 3. If you want to logs transaction in log file then "file" property needs to passed in configuration. </b>
 1. Application.yml 
 ```bash
@@ -59,39 +67,247 @@ Description :
 3. beckn.persistence.type: the pipe separated value for persistence strategy. Currently allowed values are http & db-postgres. Value http means response will be pushed to the        url mentioned in the  http_entity_endpoint parameter. If db-postgres used then response will be saved in database. Any other value is not allowed.
 4. beckn.entity.type: the allowed values are bap or bpp. Depending on the value provided, jar will all auto configuration internally and start working accordingly . Any other        value is not allowed.
     
-    2. adaptor-config-bap.json
+    2. adaptor-config-bap.json <br/>
+    <b> a) Now multiple buyers or sellers can be configured in the json config file of the adaptor. As a result of this change, the config json file is an array of configurations for each buyer/seller.</b> <br/>
+     <b> b) The password of the certificate(.p12) is now base-64 encoded in the config file. So please do not use plain text. First encode the given password and then use it. The adaptor will automatically decode it.</b> <br/>
+    <b>  c) There is a change in adaptor-config-buyer.json & adaptor-config-seller.json for multi-tenancy. subscriber_id has been introduced in the root section: This is required for subscriber matching.</b><br/>
+
+{<br/>
+
+"subscriber_id": "https://mock_bap1.com/",<br/>
+
+...<br/>
+
+},<br/>
 ```bash
-  Sample Json
-        {
-            "keyid": "nsdl.co.in|nsdl_bpp_1",
-            "private_key": "XXXXXX",
-            "api": [
-              {
-                "name": "on_search",
-                "http_entity_endpoint": "http://localhost:8079/buyer/mock/on_search",
-                "http_timeout": 1000,
-                "http_retry_count": 3,
-                "header_validity": 600000,
-                "header_authentication": true
-              },
-               {
-                "name": "on_select",
-                "http_entity_endpoint": "http://localhost:8079/buyer/mock/on_select",
-                "http_timeout": 1000,
-                "http_retry_count": 3,
-                "header_validity": 600000,
-                "header_authentication": true
-              },
-              {
-                "name": "lookup",
-                "http_entity_endpoint": "https://pilot-gateway-1.beckn.nsdl.co.in/lookup",
-                "http_timeout": 5000,
-                "http_retry_count": 0,
-                "header_validity": 600000,
-                "header_authentication": true
-              }
-            ]
-        }
+  [
+	{
+		"subscriber_id": "https://mock_bap1.com/",
+		"keyid": "buyer1.in|6",
+		"signing": {
+			"certificate_used": true,
+			"certificate_type": "pkcs12",
+			"certificate_alias": "tsa",
+			"certificate_path": "../network-participant.p12",
+			"certificate_pwd": "bnNkbDEy",
+			"private_key": ""
+		},
+		"api": [
+			{
+				"name": "search",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "select",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": false,
+				"set_authorization_header": false
+			},
+			{
+				"name": "cancel",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "confirm",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "init",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "rating",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "status",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "support",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "track",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "update",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "lookup",
+				"http_entity_endpoint": "https://pilot-gateway-1.beckn.nsdl.co.in/lookup",
+				"http_timeout": 9000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": false
+			}
+		]
+	},
+	{
+		"subscriber_id": "https://mock_bap2.com/",
+		"keyid": "buyer2.in|6",
+		"signing": {
+			"certificate_used": true,
+			"certificate_type": "pkcs12",
+			"certificate_alias": "tsa",
+			"certificate_path": "../network-participant.p12",
+			"certificate_pwd": "bnNkbDEy",
+			"private_key": ""
+		},
+		"api": [
+			{
+				"name": "search",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "select",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": false,
+				"set_authorization_header": false
+			},
+			{
+				"name": "cancel",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "confirm",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "init",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "rating",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "status",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "support",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "track",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "update",
+				"http_entity_endpoint": "",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "lookup",
+				"http_entity_endpoint": "https://pilot-gateway-1.beckn.nsdl.co.in/lookup",
+				"http_timeout": 9000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": false
+			}
+		]
+	}
+]
 ```
 Description: (As given in above example, add call back url configuration in array)
 1. keyid: it is the id that is used while registering as buyer to beckn.
@@ -104,8 +320,8 @@ Description: (As given in above example, add call back url configuration in arra
 8. header_authentication: auth header validation check. Allowed values true or false. If false auth header validation will be skipped.
 
 b. BPP - seller node Configuration ("seller node" compliant with Beckn BPP specifications)
-      <br /> <b>1. If you are using beckn-multi-api-0.0.1.jar file then postgres properties can be passed. 
-      <br />2. If you are using beckn-multi-api-no-jpa-0.0.1.jar then you dont need to pass "db-postgres" property. 
+       <br /> <b>1. If you are using beckn-multi-api-jpa-0.0.1.jar file then postgres properties can be passed. 
+      <br />2. If you are using beckn-multi-api-0.0.1.jar then you dont need to pass "db-postgres" property. 
       <br /> 3. If you want to logs transaction in log file then "file" property needs to passed in configuration. </b>
 1. Application.yml 
 ```bash
@@ -133,39 +349,248 @@ Description :
 3. beckn.persistence.type: the pipe separated value for persistence strategy. Currently allowed values are http & db-postgres. Value http means response will be pushed to the        url mentioned in the  http_entity_endpoint parameter. If db-postgres used then response will be saved in database. Any other value is not allowed.
 4. beckn.entity.type: the allowed values are bap or bpp. Depending on the value provided, jar will all auto configuration internally and start working accordingly . Any other        value is not allowed.
     
-    2. adaptor-config-bpp.json
+    2. adaptor-config-bpp.json<br/>
+    <b> a) Now multiple buyers or sellers can be configured in the json config file of the adaptor. As a result of this change, the config json file is an array of configurations for each buyer/seller.</b> <br/>
+     <b> b) The password of the certificate(.p12) is now base-64 encoded in the config file. So please do not use plain text. First encode the given password and then use it. The adaptor will automatically decode it.</b> <br/>
+    <b>  c) There is a change in adaptor-config-buyer.json & adaptor-config-seller.json for multi-tenancy. subscriber_id has been introduced in the root section: This is required for subscriber matching.</b><br/>
+
+{<br/>
+
+"subscriber_id": "https://mock_bap1.com/",<br/>
+
+...<br/>
+
+},<br/>
 ```bash
 Sample Json
-       {
-            "keyid": "nsdl.co.in|nsdl_bpp_1",
-            "private_key": "XXXXXXX",
-            "api": [
-              {
-                "name": "search",
-                "http_entity_endpoint": "http://localhost:8079/seller/mock/search",
-                "http_timeout": 1000,
-                "http_retry_count": 3,
-                "header_validity": 600000,
-                "header_authentication": true
-              },
-              {
-                "name": "select",
-                "http_entity_endpoint": "http://localhost:8079/seller/mock/select",
-                "http_timeout": 1000,
-                "http_retry_count": 3,
-                "header_validity": 600000,
-                "header_authentication": true
-              },
-              {
-                "name": "lookup",
-                "http_entity_endpoint": "https://pilot-gateway-1.beckn.nsdl.co.in/lookup",
-                "http_timeout": 5000,
-                "http_retry_count": 0,
-                "header_validity": 600000,
-                "header_authentication": true
-              }
-            ]
-        }
+       [
+	{
+		"subscriber_id": "https://mock_bpp1.com/",
+		"keyid": "seller1.in|8",
+		"signing": {
+			"certificate_used": true,
+			"certificate_type": "pkcs12",
+			"certificate_alias": "tsa",
+			"certificate_path": "../network-participant.p12",
+			"certificate_pwd": "bnNkbDEy",
+			"private_key": ""
+		},
+		"api": [
+			{
+				"name": "search",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/search",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "select",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/select",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "cancel",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/cancel",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "confirm",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/confirm",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "init",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/init",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "rating",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/rating",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "status",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/status",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "support",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/support",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "track",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/track",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "update",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/update",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "lookup",
+				"http_entity_endpoint": "https://pilot-gateway-1.beckn.nsdl.co.in/lookup",
+				"http_timeout": 9000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": false
+			}
+		]
+	},
+	{
+		"subscriber_id": "https://mock_bpp2.com/",
+		"keyid": "seller2.in|8",
+		"signing": {
+			"certificate_used": true,
+			"certificate_type": "pkcs12",
+			"certificate_alias": "tsa",
+			"certificate_path": "../network-participant.p12",
+			"certificate_pwd": "bnNkbDEy",
+			"private_key": ""
+		},
+		"api": [
+			{
+				"name": "search",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/search",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "select",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/select",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "cancel",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/cancel",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "confirm",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/confirm",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "init",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/init",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "rating",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/rating",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "status",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/status",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "support",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/support",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "track",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/track",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "update",
+				"http_entity_endpoint": "http://localhost:8089/seller/mock/update",
+				"http_timeout": 8000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": true
+			},
+			{
+				"name": "lookup",
+				"http_entity_endpoint": "https://pilot-gateway-1.beckn.nsdl.co.in/lookup",
+				"http_timeout": 9000,
+				"http_retry_count": 0,
+				"header_validity": 600000,
+				"header_authentication": true,
+				"set_authorization_header": false
+			}
+		]
+	}
+]
 ```  
 Description: (As given in above example, add call back url configuration in array)
 1. keyid: it is the id that is used while registering as seller to beckn.
